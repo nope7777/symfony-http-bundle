@@ -1,0 +1,4 @@
+services:
+    N7\SymfonyHttp\ArgumentResolver\RequestPayloadValueResolver:
+        tags:
+            - { name: controller.argument_value_resolver, priority: 50 }
