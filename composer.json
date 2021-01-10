@@ -1,6 +1,6 @@
 {
     "name": "n7/symfony-http-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
         {
