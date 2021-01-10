@@ -6,7 +6,7 @@ namespace N7\SymfonyHttpBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-final class SymfonyHttpBundle extends Bundle
+final class N7SymfonyHttpBundle extends Bundle
 {
 
 }
