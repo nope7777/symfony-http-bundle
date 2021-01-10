@@ -8,5 +8,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class N7SymfonyHttpBundle extends Bundle
 {
-
+    public function getContainerExtension()
+    {
+        return new UnconventionalExtensionClass();
+    }
 }

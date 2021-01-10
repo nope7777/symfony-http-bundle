@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-final class N7SymfonyHttpBundleExtension extends Extension
+final class N7SymfonyHttpExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
