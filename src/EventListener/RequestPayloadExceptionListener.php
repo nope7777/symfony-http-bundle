@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace N7\SymfonyHttpBundle\Listeners;
+namespace N7\SymfonyHttpBundle\EventListener;
 
 use N7\SymfonyHttpBundle\Interfaces\ValidationExceptionInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -8,6 +8,8 @@ use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
+use N7\SymfonyHttpBundle\Service\SoftTypesCaster;
+use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -18,15 +20,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Mapping\PropertyMetadata;
 
+// todo: move resolving logic to service
 final class RequestPayloadValueResolver implements ArgumentValueResolverInterface
 {
     private Serializer $serializer;
     private ValidatorInterface $validator;
+    private SoftTypesCaster $caster;
+    private ConstrainsExtractor $constrainsExtractor;
 
-    public function __construct(ValidatorInterface $validator)
-    {
+    public function __construct(
+        ValidatorInterface $validator,
+        SoftTypesCaster $caster,
+        ConstrainsExtractor $constrainsExtractor
+    ) {
         $this->serializer = SerializerBuilder::create()->build();
         $this->validator = $validator;
+        $this->caster = $caster;
+        $this->constrainsExtractor = $constrainsExtractor;
     }
 
     public function supports(Request $request, ArgumentMetadata $argument): bool
@@ -44,7 +54,7 @@ final class RequestPayloadValueResolver implements ArgumentValueResolverInterfac
     public function resolve(Request $request, ArgumentMetadata $argument): Generator
     {
         $payload = $this->getRequestPayload($request);
-        $payload = $this->cast($argument->getType(), $payload);
+        $payload = $this->caster->cast($argument->getType(), $payload); // todo: types casting is not required for json requests (?)
 
         $this->validate($argument->getType(), $payload);
 
@@ -55,25 +65,9 @@ final class RequestPayloadValueResolver implements ArgumentValueResolverInterfac
         );
     }
 
-    private function cast(string $class, array $payload): array
-    {
-        $meta = $this->validator->getMetadataFor($class);
-
-        foreach ($meta->properties as $propery) {
-            /** @var PropertyMetadata $propery */
-            dd(
-                $propery->getReflectionMember($propery->class)->getType()->getName(),
-                $propery->getReflectionMember($propery->class)->getType()->allowsNull()
-            );
-
-            // todo: cast scalar types
-            // todo: recursion for nested/nesteds
-        }
-    }
-
     private function validate(string $class, array $payload): void
     {
-        $constrains = $this->extractConstrainsFromClass($class);
+        $constrains = $this->constrainsExtractor->extract($class);
 
         $result = $this->validator->validate($payload, $constrains);
         if ($result->count()) {
@@ -92,21 +86,5 @@ final class RequestPayloadValueResolver implements ArgumentValueResolverInterfac
         }
 
         return $request->request->all();
-    }
-
-    private function extractConstrainsFromClass(string $class): Constraints\Collection
-    {
-        // todo: move to validatrors-bundle as 'ConstrainsExtractor' service
-
-        // Extracting class metadata
-        $meta = $this->validator->getMetadataFor($class);
-
-        // Collecting constraints
-        $constraints = array_map(
-            fn (PropertyMetadataInterface $property): array => $property->getConstraints(),
-            $meta->properties
-        );
-
-        return new Constraints\Collection($constraints);
     }
 }
