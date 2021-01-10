@@ -1,8 +1,8 @@
 services:
     _defaults:
         autowire: true
-    N7\SymfonyHttpBundle:
-        resource: '../../../src/'
+    N7\SymfonyHttpBundle\:
+        resource: '../../src/'
     N7\SymfonyHttpBundle\ArgumentResolver\RequestPayloadValueResolver:
         tags:
             - { name: controller.argument_value_resolver, priority: 50 }
