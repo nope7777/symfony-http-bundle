@@ -1,5 +1,5 @@
 {
-    "name": "n7/symfony-http",
+    "name": "n7/symfony-http-bundle",
     "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "N7\\SymfonyHttp\\": "src"
+            "N7\\SymfonyHttpBundle\\": "src"
         }
     }
 }

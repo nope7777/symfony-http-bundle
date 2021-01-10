@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace N7\SymfonyHttp\ArgumentResolver;
+namespace N7\SymfonyHttpBundle\ArgumentResolver;
 
-use N7\SymfonyHttp\Interfaces\RequestPayloadInterface;
+use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
