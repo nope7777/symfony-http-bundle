@@ -1,0 +1,19 @@
+{
+    "name": "n7/symfony-http",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vladimir Gluhov",
+            "email": "nope7777@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "N7\\SymfonyHttp\\": "src"
+        }
+    }
+}
