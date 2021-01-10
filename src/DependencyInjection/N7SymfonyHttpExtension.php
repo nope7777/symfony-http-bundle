@@ -13,13 +13,13 @@ final class N7SymfonyHttpExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
-        $loader = $this->createLoader();
-        $loader->load('services.xml');
+        $loader = $this->createLoader($container);
+        $loader->load('services.yaml');
     }
 
-    private function createLoader(): YamlFileLoader
+    private function createLoader(ContainerBuilder $container): YamlFileLoader
     {
-        $loader = new YamlFileLoader(
+        return new YamlFileLoader(
             $container,
             new FileLocator(__DIR__.'/../../resources/config')
         );
