@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace N7\SymfonyHttpBundle\Service;
 
+use N7\SymfonyValidatorsBundle\Validator\NestedObjects;
 use Symfony\Component\Validator\Mapping\PropertyMetadata;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use N7\SymfonyHttpBundle\Service\Casters;
@@ -14,6 +15,26 @@ final class SoftTypesCaster
     private const SCALAR_FLOAT = 'float';
     private const SCALAR_BOOLEAN = 'boolean';
     private const SCALAR_STRING = 'string';
+
+    private const TYPE_ARRAY = 'array';
+
+    private const ARRAY_OF_INTEGER = 'int[]';
+    private const ARRAY_OF_FLOAT = 'float[]';
+    private const ARRAY_OF_BOOLEAN = 'boolean[]';
+    private const ARRAY_OF_STRING = 'string[]';
+    private const AVAILABLE_ARRAYS_OF_TYPES = [
+        self::ARRAY_OF_INTEGER,
+        self::ARRAY_OF_FLOAT,
+        self::ARRAY_OF_BOOLEAN,
+        self::ARRAY_OF_STRING,
+    ];
+
+    private const ARRAY_OF_SCALARS_MAP = [
+        self::ARRAY_OF_INTEGER => self::SCALAR_INTEGER,
+        self::ARRAY_OF_FLOAT => self::SCALAR_FLOAT,
+        self::ARRAY_OF_BOOLEAN => self::SCALAR_BOOLEAN,
+        self::ARRAY_OF_STRING => self::SCALAR_STRING,
+    ];
 
     private ValidatorInterface $validator;
 
@@ -64,11 +85,12 @@ final class SoftTypesCaster
             return $this->casters[$type]->cast($value);
         }
 
-        // TODO: If type === array
-        // (array of scalar types)
-        // (array of objects)
-        // (keyed array)
+        // Arrays casting
+        if ($type === self::TYPE_ARRAY) {
+            return $this->castArrayPropery($value, $propery);
+        }
 
+        // Nested objects casting
         if (class_exists($type) && is_array($value)) {
             return $this->cast($type, $value);
         }
@@ -78,7 +100,46 @@ final class SoftTypesCaster
 
     private function castArrayPropery($value, PropertyMetadata $propery)
     {
+        // Array of nested objects
+        if ($nestedClass = $this->getNestedObjectClass($propery)) {
+            return array_map(
+                fn ($value) => $this->cast($nestedClass, $value),
+                $value
+            );
+        }
 
+        // Array of scalar types
+        $arrayType = $this->getProperyTypeFromPhpDocAnnotations($propery);
+        if (in_array($arrayType, self::AVAILABLE_ARRAYS_OF_TYPES, true)) {
+            $type = self::ARRAY_OF_SCALARS_MAP[$arrayType];
+
+            return array_map(
+                fn ($value) => $this->casters[$type]->cast($value),
+                $value
+            );
+        }
+
+        return $value;
+    }
+
+    private function getProperyTypeFromPhpDocAnnotations(PropertyMetadata $propery): ?string
+    {
+        $docBlock = $propery->getReflectionMember($propery->class)->getDocComment();
+
+        preg_match('/\@var ([^\n\s]+)/', $docBlock, $matches);
+
+        return $matches[1] ?? null;
+    }
+
+    private function getNestedObjectClass(PropertyMetadata $propery): ?string
+    {
+        foreach ($propery->constraints as $constraint) {
+            if ($constraint instanceof NestedObjects) {
+                return $constraint->class;
+            }
+        }
+
+        return null;
     }
 
     private function detectType(PropertyMetadata $property): ?string

@@ -10,6 +10,9 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
 final class RequestPayloadExceptionListener
 {
+    private const RESPONSE_HTTP_CODE = 422;
+    private const RESPONSE_MESSAGE = 'Validation error occurred';
+
     public function onKernelException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
@@ -24,10 +27,12 @@ final class RequestPayloadExceptionListener
             $errors[$key] = $error->getMessage();
         }
 
-        $event->setResponse(new JsonResponse([
-            'code' => 400,
-            'message' => 'Validation error occurred',
+        $response = new JsonResponse([
+            'code' => self::RESPONSE_HTTP_CODE,
+            'message' => self::RESPONSE_MESSAGE,
             'errors' => $errors,
-        ], 400));
+        ], self::RESPONSE_HTTP_CODE);
+
+        $event->setResponse($response);
     }
 }
