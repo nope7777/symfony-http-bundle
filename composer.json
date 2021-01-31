@@ -9,11 +9,13 @@
         }
     ],
     "require": {
-        "php": "^7.0"
+        "php": "^7.0",
+        "n7/symfony-validators-bundle": "*",
+        "jms/serializer": "^3.10"
     },
     "autoload": {
         "psr-4": {
-            "N7\\SymfonyHttp\\": "src"
+            "N7\\SymfonyHttpBundle\\": "src"
         }
     }
 }
