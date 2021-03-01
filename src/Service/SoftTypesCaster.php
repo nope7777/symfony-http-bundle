@@ -64,6 +64,16 @@ final class SoftTypesCaster
         foreach ($meta->properties as $propery) {
             // Skipping, if property is not provided in payload
             if (! array_key_exists($propery->getName(), $payload)) {
+                // If field is not presented in request but got default value in request class
+                // applying default value to this property
+                $defaultValues = $propery->getReflectionMember($propery->class)
+                    ->getDeclaringClass()
+                    ->getDefaultProperties();
+
+                if (array_key_exists($propery->getName(), $defaultValues)) {
+                    $payload[$propery->getName()] = $defaultValues[$propery->getName()];
+                }
+                
                 continue;
             }
 
