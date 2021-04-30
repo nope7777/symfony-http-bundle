@@ -13,6 +13,7 @@ final class SoftTypesCaster
 {
     private const SCALAR_INTEGER = 'int';
     private const SCALAR_FLOAT = 'float';
+    private const SCALAR_BOOL = 'bool';
     private const SCALAR_BOOLEAN = 'boolean';
     private const SCALAR_STRING = 'string';
 
@@ -20,11 +21,13 @@ final class SoftTypesCaster
 
     private const ARRAY_OF_INTEGER = 'int[]';
     private const ARRAY_OF_FLOAT = 'float[]';
+    private const ARRAY_OF_BOOL = 'bool[]';
     private const ARRAY_OF_BOOLEAN = 'boolean[]';
     private const ARRAY_OF_STRING = 'string[]';
     private const AVAILABLE_ARRAYS_OF_TYPES = [
         self::ARRAY_OF_INTEGER,
         self::ARRAY_OF_FLOAT,
+        self::ARRAY_OF_BOOL,
         self::ARRAY_OF_BOOLEAN,
         self::ARRAY_OF_STRING,
     ];
@@ -32,6 +35,7 @@ final class SoftTypesCaster
     private const ARRAY_OF_SCALARS_MAP = [
         self::ARRAY_OF_INTEGER => self::SCALAR_INTEGER,
         self::ARRAY_OF_FLOAT => self::SCALAR_FLOAT,
+        self::ARRAY_OF_BOOL => self::SCALAR_BOOL,
         self::ARRAY_OF_BOOLEAN => self::SCALAR_BOOLEAN,
         self::ARRAY_OF_STRING => self::SCALAR_STRING,
     ];
@@ -42,6 +46,7 @@ final class SoftTypesCaster
     private array $casters = [
         self::SCALAR_INTEGER => Casters\SoftIntegerCaster::class,
         self::SCALAR_FLOAT => Casters\SoftFloatCaster::class,
+        self::SCALAR_BOOL => Casters\SoftBooleanCaster::class,
         self::SCALAR_BOOLEAN => Casters\SoftBooleanCaster::class,
         self::SCALAR_STRING => Casters\SoftStringCaster::class,
     ];
