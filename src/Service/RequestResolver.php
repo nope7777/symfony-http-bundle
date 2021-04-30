@@ -63,16 +63,13 @@ final class RequestResolver
 
     private function getRequestPayload(Request $request): array
     {
-        if ($request->getContentType() === self::CONTENT_TYPE_JSON) {
-            if (! $request->getContent()) {
-                return [];
-            }
-            
-            return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR);
-        }
-
+        // Should be first, only method, that can't contain json payload
         if ($request->getMethod() === self::METHOD_GET) {
             return $request->query->all();
+        }
+        
+        if ($request->getContentType() === self::CONTENT_TYPE_JSON) {
+            return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR);
         }
 
         return $request->request->all();
