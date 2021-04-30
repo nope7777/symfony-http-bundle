@@ -45,7 +45,7 @@ final class RequestResolver
         $this->validate($requestClass, $payload);
 
         return $this->serializer->deserialize(
-            json_encode($payload),
+            json_encode($payload, JSON_THROW_ON_ERROR),
             $requestClass,
             self::DESETIALIZATION_FORMAT_JSON
         );
