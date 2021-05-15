@@ -6,6 +6,7 @@ namespace N7\SymfonyHttpBundle\Service;
 
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
+use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
 use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
@@ -31,10 +32,12 @@ final class RequestResolver
         SoftTypesCaster $caster,
         ConstrainsExtractor $constrainsExtractor
     ) {
-        $this->serializer = SerializerBuilder::create()->build();
         $this->validator = $validator;
         $this->caster = $caster;
         $this->constrainsExtractor = $constrainsExtractor;
+        $this->serializer = SerializerBuilder::create()
+            ->setPropertyNamingStrategy(new IdenticalPropertyNamingStrategy())
+            ->build();
     }
 
     public function resolve(Request $request, string $requestClass): RequestPayloadInterface
