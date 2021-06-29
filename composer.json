@@ -9,10 +9,11 @@
         }
     ],
     "require": {
-        "php": "^7.0",
+        "php": "^7.4",
         "symfony/http-foundation": "^5.0",
         "n7/symfony-validators-bundle": "*",
-        "jms/serializer": "^3.10"
+        "jms/serializer": "^3.10",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
