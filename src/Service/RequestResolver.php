@@ -8,11 +8,11 @@ use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
+use N7\SymfonyHttpBundle\Interfaces\RequestGroupAwareInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
 use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
-use Generator;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class RequestResolver
@@ -40,12 +40,19 @@ final class RequestResolver
             ->build();
     }
 
-    public function resolve(Request $request, string $requestClass): RequestPayloadInterface
+    public function resolve(Request $request, string $requestClass, ?array $groups = null): RequestPayloadInterface
     {
         $payload = $this->getRequestPayload($request);
         $payload = $this->caster->cast($requestClass, $payload);
 
-        $this->validate($requestClass, $payload);
+        if (in_array(RequestGroupAwareInterface::class, class_implements($requestClass), true)) {
+            $groups = array_merge(
+                $requestClass::getGroupSequence($payload),
+                $groups ?? []
+            );
+        }
+
+        $this->validate($requestClass, $payload, $groups);
 
         return $this->serializer->deserialize(
             json_encode($payload, JSON_THROW_ON_ERROR),
@@ -54,11 +61,11 @@ final class RequestResolver
         );
     }
 
-    private function validate(string $class, array $payload): void
+    private function validate(string $class, array $payload, ?array $groups = null): void
     {
         $constrains = $this->constrainsExtractor->extract($class);
 
-        $result = $this->validator->validate($payload, $constrains);
+        $result = $this->validator->validate($payload, $constrains, $groups);
         if ($result->count()) {
             throw new RequestPayloadValidationFailedException($result, $class, $payload);
         }
