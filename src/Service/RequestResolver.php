@@ -26,15 +26,18 @@ final class RequestResolver
     private ValidatorInterface $validator;
     private SoftTypesCaster $caster;
     private ConstrainsExtractor $constrainsExtractor;
+    private AnnotationsHandler $annotationsHandler;
 
     public function __construct(
         ValidatorInterface $validator,
         SoftTypesCaster $caster,
-        ConstrainsExtractor $constrainsExtractor
+        ConstrainsExtractor $constrainsExtractor,
+        AnnotationsHandler $annotationsHandler
     ) {
         $this->validator = $validator;
         $this->caster = $caster;
         $this->constrainsExtractor = $constrainsExtractor;
+        $this->annotationsHandler = $annotationsHandler;
         $this->serializer = SerializerBuilder::create()
             ->setPropertyNamingStrategy(new IdenticalPropertyNamingStrategy())
             ->build();
@@ -43,7 +46,9 @@ final class RequestResolver
     public function resolve(Request $request, string $requestClass, ?array $groups = null): RequestPayloadInterface
     {
         $payload = $this->getRequestPayload($request);
+        
         $payload = $this->caster->cast($requestClass, $payload);
+        $payload = $this->annotationsHandler->apply($requestClass, $payload);
 
         if (in_array(RequestGroupAwareInterface::class, class_implements($requestClass), true)) {
             $groups = array_merge(
