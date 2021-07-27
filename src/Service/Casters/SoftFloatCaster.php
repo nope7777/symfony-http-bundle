@@ -11,6 +11,10 @@ final class SoftFloatCaster implements SoftCasterInterface
         if (! is_scalar($value)) {
             return $value;
         }
+        
+        if (is_string($value)) {
+            $value = str_replace(',', '.', $value);
+        }
 
         return is_numeric($value) ? (float) $value : $value;
     }
