@@ -60,7 +60,7 @@ final class RequestResolver
         $this->validate($requestClass, $payload, $groups);
 
         return $this->serializer->deserialize(
-            json_encode($payload, JSON_THROW_ON_ERROR),
+            json_encode($payload, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_IGNORE),
             $requestClass,
             self::DESETIALIZATION_FORMAT_JSON
         );
