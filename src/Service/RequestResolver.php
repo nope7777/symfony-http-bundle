@@ -8,6 +8,9 @@ use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
+use N7\SymfonyHttpBundle\Interfaces\Payload\RequestFormDataInterface;
+use N7\SymfonyHttpBundle\Interfaces\Payload\RequestJsonPayloadInterface;
+use N7\SymfonyHttpBundle\Interfaces\Payload\RequestQueryParametersInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestGroupAwareInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
 use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
@@ -45,8 +48,8 @@ final class RequestResolver
 
     public function resolve(Request $request, string $requestClass, ?array $groups = null): RequestPayloadInterface
     {
-        $payload = $this->getRequestPayload($request);
-        
+        $payload = $this->getRequestPayload($request, $requestClass);
+
         $payload = $this->caster->cast($requestClass, $payload);
         $payload = $this->annotationsHandler->apply($requestClass, $payload);
 
@@ -76,13 +79,27 @@ final class RequestResolver
         }
     }
 
-    private function getRequestPayload(Request $request): array
+    private function getRequestPayload(Request $request, string $class): array
+    {
+        switch (true) {
+            case is_subclass_of($class, RequestQueryParametersInterface::class):
+                return $request->query->all();
+            case is_subclass_of($class, RequestJsonPayloadInterface::class):
+                return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR) ?? [];
+            case is_subclass_of($class, RequestFormDataInterface::class):
+                return $request->request->all();
+            default:
+                return $this->autoDetectRequestPayload($request);
+        }
+    }
+
+    private function autoDetectRequestPayload(Request $request): array
     {
         // Should be first, only method, that can't contain json payload
         if ($request->getMethod() === self::METHOD_GET) {
             return $request->query->all();
         }
-        
+
         if ($request->getContentType() === self::CONTENT_TYPE_JSON) {
             return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR) ?? [];
         }
