@@ -34,7 +34,11 @@ final class AnnotationsHandler
             // Applying mutators
             $mutators = $this->getPropertyMutators($propery);
             foreach ($mutators as $mutator) {
-                $payload[$propery->getName()] = $mutator->mutate($payload[$propery->getName()], $payload);
+                $payload[$propery->getName()] = $mutator->mutate(
+                    $payload[$propery->getName()],
+                    $payload,
+                    $propery->getName()
+                );
             }
 
             // If nested object

@@ -11,8 +11,9 @@ interface ValueMutatorInterface
 {
     /**
      * @param mixed $value
-     * @param mixed $payload
+     * @param array $payload
+     * @param string $property
      * @return mixed
      */
-    public function mutate($value, array $payload);
+    public function mutate($value, array $payload, string $property);
 }
