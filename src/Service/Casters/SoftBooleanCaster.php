@@ -6,8 +6,8 @@ namespace N7\SymfonyHttpBundle\Service\Casters;
 
 final class SoftBooleanCaster implements SoftCasterInterface
 {
-    private const STRING_TRUE = 'true';
-    private const STRING_FALSE = 'false';
+    private const TRUE_VALUES = ['true', '1'];
+    private const FALSE_VALUES = ['false', '0'];
 
     public function cast($value)
     {
@@ -15,11 +15,11 @@ final class SoftBooleanCaster implements SoftCasterInterface
             return $value;
         }
 
-        if ($value === self::STRING_TRUE) {
+        if (in_array($value, self::TRUE_VALUES)) {
             return true;
         }
 
-        if ($value === self::STRING_FALSE) {
+        if (in_array($value, self::FALSE_VALUES)) {
             return false;
         }
 
