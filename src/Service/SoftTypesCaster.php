@@ -61,7 +61,7 @@ final class SoftTypesCaster
         );
     }
 
-    public function cast(string $class, array $payload): array
+    public function cast(string $class, array $payload, bool $defaultClassValuesToPayload = true): array
     {
         $meta = $this->validator->getMetadataFor($class);
 
@@ -69,20 +69,29 @@ final class SoftTypesCaster
         foreach ($meta->properties as $propery) {
             // Skipping, if property is not provided in payload
             if (! array_key_exists($propery->getName(), $payload)) {
-                // If field is not presented in request but got default value in request class
-                // applying default value to this property
-                $defaultValues = $propery->getReflectionMember($propery->class)
-                    ->getDeclaringClass()
-                    ->getDefaultProperties();
-
-                if (array_key_exists($propery->getName(), $defaultValues)) {
-                    $payload[$propery->getName()] = $defaultValues[$propery->getName()];
+                if ($defaultClassValuesToPayload) {
+                    // If field is not presented in request but got default value in request class
+                    // applying default value to this property
+                    $payload = $this->applyDefaultValueToPayload($propery, $payload);
                 }
                 
                 continue;
             }
 
             $payload[$propery->getName()] = $this->castProperty($payload[$propery->getName()], $propery);
+        }
+
+        return $payload;
+    }
+
+    private function applyDefaultValueToPayload(PropertyMetadata $propery, array $payload): array
+    {
+        $defaultValues = $propery->getReflectionMember($propery->class)
+            ->getDeclaringClass()
+            ->getDefaultProperties();
+
+        if (array_key_exists($propery->getName(), $defaultValues)) {
+            $payload[$propery->getName()] = $defaultValues[$propery->getName()];
         }
 
         return $payload;

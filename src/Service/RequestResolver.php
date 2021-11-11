@@ -46,11 +46,15 @@ final class RequestResolver
             ->build();
     }
 
-    public function resolve(Request $request, string $requestClass, ?array $groups = null): RequestPayloadInterface
-    {
+    public function resolve(
+        Request $request,
+        string $requestClass,
+        ?array $groups = null,
+        bool $defaultClassValuesToPayload = true
+    ): RequestPayloadInterface {
         $payload = $this->getRequestPayload($request, $requestClass);
 
-        $payload = $this->caster->cast($requestClass, $payload);
+        $payload = $this->caster->cast($requestClass, $payload, $defaultClassValuesToPayload);
         $payload = $this->annotationsHandler->apply($requestClass, $payload);
 
         if (in_array(RequestGroupAwareInterface::class, class_implements($requestClass), true)) {
