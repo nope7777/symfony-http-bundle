@@ -54,6 +54,15 @@ final class RequestResolver
     ): RequestPayloadInterface {
         $payload = $this->getRequestPayload($request, $requestClass);
 
+        return $this->resolveFromArray($payload, $requestClass, $groups, $defaultClassValuesToPayload);
+    }
+
+    public function resolveFromArray(
+        array $payload,
+        string $requestClass,
+        ?array $groups = null,
+        bool $defaultClassValuesToPayload = true
+    ): RequestPayloadInterface {
         $payload = $this->caster->cast($requestClass, $payload, $defaultClassValuesToPayload);
         $payload = $this->annotationsHandler->apply($requestClass, $payload);
 
