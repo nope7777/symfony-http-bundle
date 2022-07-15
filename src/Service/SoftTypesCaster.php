@@ -134,7 +134,7 @@ final class SoftTypesCaster
 
         // Array of scalar types
         $arrayType = $this->getProperyTypeFromPhpDocAnnotations($propery);
-        if (in_array($arrayType, self::AVAILABLE_ARRAYS_OF_TYPES, true)) {
+        if (in_array($arrayType, self::AVAILABLE_ARRAYS_OF_TYPES, true) && is_array($value)) {
             $type = self::ARRAY_OF_SCALARS_MAP[$arrayType];
 
             return array_map(
