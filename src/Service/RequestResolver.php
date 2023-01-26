@@ -7,12 +7,14 @@ namespace N7\SymfonyHttpBundle\Service;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
+use JMS\Serializer\Handler\HandlerRegistry;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestFormDataInterface;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestJsonPayloadInterface;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestQueryParametersInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestGroupAwareInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
+use N7\SymfonyHttpBundle\Serializer\Handlers\SerializerMixedTypeHandler;
 use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -43,6 +45,9 @@ final class RequestResolver
         $this->annotationsHandler = $annotationsHandler;
         $this->serializer = SerializerBuilder::create()
             ->setPropertyNamingStrategy(new IdenticalPropertyNamingStrategy())
+            ->configureHandlers(function(HandlerRegistry $registry) {
+                $registry->registerSubscribingHandler(new SerializerMixedTypeHandler());
+            })
             ->build();
     }
 
