@@ -148,7 +148,9 @@ final class SoftTypesCaster
 
     private function getProperyTypeFromPhpDocAnnotations(PropertyMetadata $propery): ?string
     {
-        $docBlock = $propery->getReflectionMember($propery->class)->getDocComment();
+        if (! $docBlock = $propery->getReflectionMember($propery->class)->getDocComment()) {
+            return null;
+        }
 
         preg_match('/\@var ([^\n\s]+)/', $docBlock, $matches);
 
