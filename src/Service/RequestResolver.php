@@ -10,10 +10,12 @@ use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use JMS\Serializer\Handler\HandlerRegistry;
 use N7\SymfonyHttpBundle\Exceptions\RequestPayloadValidationFailedException;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestFormDataInterface;
+use N7\SymfonyHttpBundle\Interfaces\Payload\RequestHeaderInterface;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestJsonPayloadInterface;
 use N7\SymfonyHttpBundle\Interfaces\Payload\RequestQueryParametersInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestGroupAwareInterface;
 use N7\SymfonyHttpBundle\Interfaces\RequestPayloadInterface;
+use N7\SymfonyHttpBundle\Interfaces\RequestPropertyMapInterface;
 use N7\SymfonyHttpBundle\Serializer\Handlers\SerializerMixedTypeHandler;
 use N7\SymfonyValidatorsBundle\Service\ConstrainsExtractor;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,6 +93,15 @@ final class RequestResolver
     {
         $constrains = $this->constrainsExtractor->extract($class);
 
+        if (is_subclass_of($class, RequestPropertyMapInterface::class)) {
+            foreach ($class::getPropertyMap() as $property => $map) {
+                if (array_key_exists($property, $payload)) {
+                    $payload[$map] = $payload[$property];
+                    unset($payload[$property]);
+                }
+            }
+        }
+
         $result = $this->validator->validate($payload, $constrains, $groups);
         if ($result->count()) {
             throw new RequestPayloadValidationFailedException($result, $class, $payload);
@@ -106,6 +117,11 @@ final class RequestResolver
                 return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR) ?? [];
             case is_subclass_of($class, RequestFormDataInterface::class):
                 return $request->request->all();
+            case is_subclass_of($class, RequestHeaderInterface::class):
+                return array_map(
+                    fn(array $header) => count($header) === 1 ? array_shift($header) : $header,
+                    $request->headers->all()
+                );
             default:
                 return $this->autoDetectRequestPayload($request);
         }
