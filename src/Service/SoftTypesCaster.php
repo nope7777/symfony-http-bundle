@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace N7\SymfonyHttpBundle\Service;
 
+use N7\SymfonyHttpBundle\Interfaces\RequestPropertyMapInterface;
 use N7\SymfonyValidatorsBundle\Validator\NestedObjects;
 use Symfony\Component\Validator\Mapping\PropertyMetadata;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -64,6 +65,14 @@ final class SoftTypesCaster
     public function cast(string $class, array $payload, bool $defaultClassValuesToPayload = true): array
     {
         $meta = $this->validator->getMetadataFor($class);
+        if (is_subclass_of($class, RequestPropertyMapInterface::class)) {
+            foreach ($class::getPropertyMap() as $property => $map) {
+                if (array_key_exists($map, $payload)) {
+                    $payload[$property] = $payload[$map];
+                    unset($payload[$map]);
+                }
+            }
+        }
 
         /** @var PropertyMetadata $propery */
         foreach ($meta->properties as $propery) {
