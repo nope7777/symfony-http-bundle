@@ -99,6 +99,11 @@ final class RequestResolver
                     $payload[$map] = $payload[$property];
                     unset($payload[$property]);
                 }
+
+                if (array_key_exists($property, $constrains->fields)) {
+                    $constrains->fields[$map] = $constrains->fields[$property];
+                    unset($constrains->fields[$property]);
+                }
             }
         }
 
