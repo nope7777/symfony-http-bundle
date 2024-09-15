@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": "^7.4|^8.0",
-        "symfony/http-foundation": "^5.0|^6.0",
+        "symfony/http-foundation": "^5.0|^6.0|^7.0",
         "n7/symfony-validators-bundle": "*",
         "jms/serializer": "^3.10",
         "ext-json": "*"
