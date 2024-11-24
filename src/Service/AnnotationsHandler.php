@@ -9,19 +9,11 @@ use N7\SymfonyValidatorsBundle\Validator\NestedObject;
 use N7\SymfonyValidatorsBundle\Validator\NestedObjects;
 use Symfony\Component\Validator\Mapping\PropertyMetadata;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Doctrine\Common\Annotations\AnnotationReader;
 use ReflectionClass;
 use ReflectionProperty;
 
 final class AnnotationsHandler
 {
-    private AnnotationReader $annotationReader;
-
-    public function __construct(AnnotationReader $annotationReader)
-    {
-        $this->annotationReader = $annotationReader;
-    }
-
     public function apply(string $class, array $payload): array
     {
         $reflection = new ReflectionClass($class);
@@ -64,41 +56,28 @@ final class AnnotationsHandler
         return $payload;
     }
 
+    /**
+     * @param ReflectionProperty $property
+     * @return ValueMutatorInterface[]
+     */
     private function getPropertyMutators(ReflectionProperty $property): array
     {
-        $annotations = $this->annotationReader->getPropertyAnnotations($property);
+        $mutators = $property->getAttributes(ValueMutatorInterface::class, \ReflectionAttribute::IS_INSTANCEOF);
 
-        $annotations = array_filter(
-            $annotations,
-            fn ($annotation): bool => $annotation instanceof ValueMutatorInterface
-        );
-
-        return array_values($annotations);
+        return array_map(fn (\ReflectionAttribute $attribute) => $attribute->newInstance(), $mutators);
     }
 
     private function getPropertyNestedObjectClass(ReflectionProperty $property): ?string
     {
-        $annotations = $this->annotationReader->getPropertyAnnotations($property);
+        $attributes = $property->getAttributes(NestedObject::class, \ReflectionAttribute::IS_INSTANCEOF);
 
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof NestedObject) {
-                return $annotation->class;
-            }
-        }
-
-        return null;
+        return $attributes ? $attributes[0]->newInstance()->class : null;
     }
 
     private function getPropertyNestedObjectsClass(ReflectionProperty $property): ?string
     {
-        $annotations = $this->annotationReader->getPropertyAnnotations($property);
+        $attributes = $property->getAttributes(NestedObjects::class, \ReflectionAttribute::IS_INSTANCEOF);
 
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof NestedObjects) {
-                return $annotation->class;
-            }
-        }
-
-        return null;
+        return $attributes ? $attributes[0]->newInstance()->class : null;
     }
 }
