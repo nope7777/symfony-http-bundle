@@ -109,7 +109,7 @@ class StringLimitMutator implements ValueMutatorInterface
 final class TestRequest implements RequestPayloadInterface
 {
     #[Constraints\NotBlank]
-    #[Constraints\Type('integer')]
+    #[Constraints\Type('string')]
     #[StringLimitMutator]
     private string $address;
 }
