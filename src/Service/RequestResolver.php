@@ -139,7 +139,7 @@ final class RequestResolver
             return $request->query->all();
         }
 
-        if ($request->getContentType() === self::CONTENT_TYPE_JSON) {
+        if ($request->getContentTypeFormat() === self::CONTENT_TYPE_JSON) {
             return json_decode($request->getContent(), true, JSON_THROW_ON_ERROR) ?? [];
         }
 
