@@ -6,6 +6,7 @@ namespace N7\SymfonyHttpBundle\Service;
 
 use N7\SymfonyHttpBundle\Interfaces\RequestPropertyMapInterface;
 use N7\SymfonyValidatorsBundle\Validator\NestedObjects;
+use Symfony\Component\Validator\Mapping\ClassMetadataInterface;
 use Symfony\Component\Validator\Mapping\PropertyMetadata;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use N7\SymfonyHttpBundle\Service\Casters;
@@ -75,7 +76,7 @@ final class SoftTypesCaster
         }
 
         /** @var PropertyMetadata $propery */
-        foreach ($meta->properties as $propery) {
+        foreach ($this->getPropertiesMetadata($meta) as $propery) {
             // Skipping, if property is not provided in payload
             if (! array_key_exists($propery->getName(), $payload)) {
                 if ($defaultClassValuesToPayload) {
@@ -93,9 +94,29 @@ final class SoftTypesCaster
         return $payload;
     }
 
+    /**
+     * Replacement for ClassMetadata::$properties, which is private since symfony/validator 7.4.
+     *
+     * @return PropertyMetadata[]
+     */
+    private function getPropertiesMetadata(ClassMetadataInterface $meta): array
+    {
+        $properties = [];
+        foreach ($meta->getConstrainedProperties() as $property) {
+            foreach ($meta->getPropertyMetadata($property) as $member) {
+                if ($member instanceof PropertyMetadata) {
+                    $properties[$property] = $member;
+                    break;
+                }
+            }
+        }
+
+        return $properties;
+    }
+
     private function applyDefaultValueToPayload(PropertyMetadata $propery, array $payload): array
     {
-        $defaultValues = $propery->getReflectionMember($propery->class)
+        $defaultValues = $propery->getReflectionMember($propery->getClassName())
             ->getDeclaringClass()
             ->getDefaultProperties();
 
@@ -157,7 +178,7 @@ final class SoftTypesCaster
 
     private function getProperyTypeFromPhpDocAnnotations(PropertyMetadata $propery): ?string
     {
-        if (! $docBlock = $propery->getReflectionMember($propery->class)->getDocComment()) {
+        if (! $docBlock = $propery->getReflectionMember($propery->getClassName())->getDocComment()) {
             return null;
         }
 
@@ -168,7 +189,7 @@ final class SoftTypesCaster
 
     private function getNestedObjectClass(PropertyMetadata $propery): ?string
     {
-        foreach ($propery->constraints as $constraint) {
+        foreach ($propery->getConstraints() as $constraint) {
             if ($constraint instanceof NestedObjects) {
                 return $constraint->class;
             }
@@ -179,7 +200,7 @@ final class SoftTypesCaster
 
     private function detectType(PropertyMetadata $property): ?string
     {
-        if ($reflectionType = $property->getReflectionMember($property->class)->getType()) {
+        if ($reflectionType = $property->getReflectionMember($property->getClassName())->getType()) {
             return $reflectionType->getName();
         }
 
